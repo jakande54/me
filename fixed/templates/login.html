@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In · THE LAUNDRY SHOP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1e3a8a, #2563eb);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+      }
+
+      .nav-brand {
+        text-decoration: none;
+        color: #111827;
+        font-size: 2rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .auth-page {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .auth-box {
+        background: #ffffff;
+        width: 100%;
+        max-width: 420px;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        animation: slideUp 0.5s ease;
+      }
+
+      .auth-title {
+        text-align: center;
+        font-size: 2rem;
+        color: #111827;
+        margin-bottom: 10px;
+      }
+
+      .auth-sub {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 25px;
+      }
+
+      .form-group {
+        margin-bottom: 18px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        outline: none;
+        transition: all 0.3s ease;
+        font-size: 15px;
+      }
+
+      .form-group input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+      }
+
+      .btn {
+        border: none;
+        cursor: pointer;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: #2563eb;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .error-msg {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: 600;
+        animation: fadeIn 0.3s ease;
+        display: none;
+      }
+
+      .error-msg.visible {
+        display: block;
+      }
+
+      .auth-footer {
+        margin-top: 20px;
+        text-align: center;
+        color: #6b7280;
+      }
+
+      .auth-footer a {
+        text-decoration: none;
+        color: #2563eb;
+        font-weight: 600;
+      }
+
+      .auth-footer a:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(25px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .auth-box {
+          padding: 25px;
+        }
+
+        .auth-title {
+          font-size: 1.7rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-page">
+      <div class="auth-box">
+        <a class="nav-brand" href="/"><span>🫧</span> The Laundry Shop</a>
+
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-sub">Sign in to your The Laundry Shop account</p>
+
+        <div id="message" class="error-msg"></div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="your_username"
+              required
+              autofocus
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="width: 100%; justify-content: center; padding: 0.65rem"
+          >
+            Sign in
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          Don't have an account? <a href="/register">Create one</a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("loginForm");
+      const submitBtn = form.querySelector(".btn-primary");
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const messageBox = document.getElementById("message");
+
+      function showMessage(text) {
+        messageBox.textContent = text;
+        messageBox.classList.add("visible");
+      }
+
+      function clearMessage() {
+        messageBox.textContent = "";
+        messageBox.classList.remove("visible");
+      }
+
+      function resetButton() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Sign in";
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearMessage();
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+
+        if (username.length < 3) {
+          showMessage("Username must be at least 3 characters.");
+          usernameInput.focus();
+          return;
+        }
+
+        if (password.length < 4) {
+          showMessage("Password must be at least 4 characters.");
+          passwordInput.focus();
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "Signing In...";
+
+        try {
+          const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            window.location.href =
+              data.role === "ADMIN" ? "/admin" : "/customer";
+          } else {
+            showMessage(data.message || "Invalid username or password");
+            resetButton();
+          }
+        } catch (error) {
+          console.error(error);
+          showMessage("Server error. Please try again.");
+          resetButton();
+        }
+      });
+    </script>
+  </body>
+</html>

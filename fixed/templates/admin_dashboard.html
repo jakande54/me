@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · The Laundry Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+      :root {
+        --blue: #2563eb;
+        --blue-dark: #1d4ed8;
+        --green: #059669;
+        --red: #dc2626;
+        --orange: #d97706;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* Navbar */
+
+      .nav {
+        background: white;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+      }
+      .nav-brand {
+        text-decoration: none;
+        color: #111827;
+        font-size: 2rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .nav-user {
+        font-weight: 600;
+        color: var(--muted);
+      }
+
+      /* Layout */
+
+      .page {
+        max-width: 1400px;
+        margin: auto;
+        padding: 2rem;
+      }
+
+      .page-title {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: var(--text);
+      }
+
+      /* Stats */
+
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--card);
+        padding: 1.5rem;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      /* Cards */
+
+      .card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+      }
+
+      /* Tables */
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        background: #f3f4f6;
+      }
+
+      thead th {
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.9rem;
+        color: #374151;
+      }
+
+      tbody td {
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+      }
+
+      tbody tr:hover {
+        background: #f9fafb;
+      }
+
+      /* Badges */
+
+      .badge {
+        display: inline-block;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .badge-completed {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      /* Buttons */
+
+      .btn {
+        border: none;
+        cursor: pointer;
+        padding: 0.7rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: 0.3s;
+        text-decoration: none;
+      }
+
+      .btn-sm {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+      }
+
+      .btn-success {
+        background: var(--green);
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #047857;
+      }
+
+      .btn-danger {
+        background: var(--red);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+
+      .btn-ghost {
+        background: #f3f4f6;
+        color: #374151;
+      }
+
+      .btn-ghost:hover {
+        background: #e5e7eb;
+      }
+
+      /* Toast */
+
+      #toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #111827;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      #toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--muted);
+      }
+
+      /* Responsive */
+
+      @media (max-width: 768px) {
+        .page {
+          padding: 1rem;
+        }
+
+        .nav {
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .stats-row {
+          grid-template-columns: 1fr;
+        }
+
+        table {
+          min-width: 700px;
+        }
+
+        .nav-right {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav">
+      <a class="nav-brand" href="/"
+        ><span>🫧</span> The Laundry Shop
+        <span
+          style="
+            font-size: 0.7rem;
+            background: var(--blue);
+            color: #fff;
+            border-radius: 4px;
+            padding: 0.1rem 0.4rem;
+            font-weight: 600;
+            margin-left: 0.25rem;
+          "
+          >ADMIN</span
+        ></a
+      >
+      <div class="nav-right">
+        <span class="nav-user">👤 {{ fullname }}</span>
+        <a href="/logout" class="btn btn-ghost btn-sm">Sign out</a>
+      </div>
+    </nav>
+
+    <div class="page">
+      <h1 class="page-title">Dashboard</h1>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total orders</div>
+          <div class="stat-value" id="totalCount">{{ orders|length }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" id="pendingCount" style="color: #d97706">
+            {{ orders|selectattr('4','equalto','Pending')|list|length }}
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="completedCount" style="color: #059669">
+            {{ orders|selectattr('4','equalto','Completed')|list|length }}
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Registered users</div>
+          <div class="stat-value" id="userCount">{{ users|length }}</div>
+        </div>
+      </div>
+
+      <!-- Orders -->
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        "
+      >
+        <h2 style="font-size: 1rem; font-weight: 600">All Orders</h2>
+        <button class="btn btn-danger btn-sm" onclick="clearAllOrders()">
+          🗑 Clear all orders
+        </button>
+      </div>
+
+      <div
+        class="card"
+        id="ordersCard"
+        style="padding: 0; overflow: hidden; margin-bottom: 2rem"
+      >
+        {% if orders %}
+        <div class="table-wrap" style="border: none; border-radius: 0">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in orders %}
+              <tr id="row-{{ o[0] }}">
+                <td style="color: var(--muted); font-size: 0.8rem">
+                  #{{ o[0] }}
+                </td>
+                <td>{{ o[1] }}</td>
+                <td>{{ o[2] }}</td>
+                <td>{{ o[3] }}</td>
+                <td>
+                  <span
+                    class="badge {% if o[4] == 'Completed' %}badge-completed{% else %}badge-pending{% endif %}"
+                  >
+                    {{ o[4] }}
+                  </span>
+                </td>
+                <td>
+                  <div class="row-actions" style="display: flex; gap: 0.4rem">
+                    {% if o[4] != 'Completed' %}
+                    <button
+                      class="btn btn-success btn-sm btn-done"
+                      onclick="completeOrder({{ o[0] }})"
+                    >
+                      ✓ Done
+                    </button>
+                    {% endif %}
+                    <button
+                      class="btn btn-danger btn-sm"
+                      onclick="deleteOrder({{ o[0] }})"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state" id="ordersEmptyState">
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem">🧺</div>
+          <div style="font-weight: 600">No orders yet</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Users -->
+      <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem">
+        Registered Users
+      </h2>
+      <div class="card" style="padding: 0; overflow: hidden">
+        <div class="table-wrap" style="border: none; border-radius: 0">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Full name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              {% for u in users %}
+              <tr id="user-row-{{ u[0] }}">
+                <td style="color: var(--muted); font-size: 0.8rem">
+                  {{ u[0] }}
+                </td>
+                <td>{{ u[1] }}</td>
+                <td>{{ u[2] }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    style="{% if u[4]=='ADMIN' %}background:#dbeafe; color:#1e40af;{% else %}background:#f3f4f6; color:#374151;{% endif %}"
+                  >
+                    {{ u[4] }}
+                  </span>
+                </td>
+                <td>
+                  {% if u[4] != 'ADMIN' %}
+                  <button
+                    class="btn btn-danger btn-sm"
+                    onclick="deleteUser({{ u[0] }})"
+                  >
+                    Delete
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+      const socket = io();
+
+      function showToast(msg, ok = true) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.style.background = ok ? "#111827" : "#dc2626";
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 3000);
+      }
+
+      function updateOrderStats() {
+        const rows = document.querySelectorAll("#ordersTable tbody tr");
+        let pending = 0;
+        let completed = 0;
+        rows.forEach((row) => {
+          if (row.querySelector(".badge-pending")) pending++;
+          if (row.querySelector(".badge-completed")) completed++;
+        });
+        document.getElementById("totalCount").textContent = rows.length;
+        document.getElementById("pendingCount").textContent = pending;
+        document.getElementById("completedCount").textContent = completed;
+      }
+
+      function ensureOrdersTableExists() {
+        if (document.getElementById("ordersTable")) return;
+        const card = document.getElementById("ordersCard");
+        card.innerHTML = `
+          <div class="table-wrap" style="border: none; border-radius: 0">
+            <table id="ordersTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Customer</th>
+                  <th>Phone</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      function showOrdersEmptyState() {
+        const card = document.getElementById("ordersCard");
+        card.innerHTML = `
+          <div class="empty-state" id="ordersEmptyState">
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem">🧺</div>
+            <div style="font-weight: 600">No orders yet</div>
+          </div>
+        `;
+      }
+
+      function buildOrderRowHtml(order) {
+        return `
+          <tr id="row-${order.id}">
+            <td style="color: var(--muted); font-size: 0.8rem">#${order.id}</td>
+            <td>${order.customer}</td>
+            <td>${order.phone}</td>
+            <td>${order.service}</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td>
+              <div class="row-actions" style="display: flex; gap: 0.4rem">
+                <button class="btn btn-success btn-sm btn-done" onclick="completeOrder(${order.id})">✓ Done</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      async function completeOrder(id) {
+        try {
+          const res = await fetch(`/complete/${id}`);
+          const data = await res.json();
+
+          if (data.success) {
+            showToast("Order marked complete");
+            const row = document.getElementById(`row-${id}`);
+            if (row) {
+              const badge = row.querySelector(".badge");
+              badge.className = "badge badge-completed";
+              badge.textContent = "Completed";
+              const doneBtn = row.querySelector(".btn-done");
+              if (doneBtn) doneBtn.remove();
+            }
+            updateOrderStats();
+          } else {
+            showToast(data.message || "Could not complete order", false);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Server error. Please try again.", false);
+        }
+      }
+
+      async function deleteOrder(id) {
+        if (!confirm("Are you sure you want to delete this order?")) return;
+
+        try {
+          const res = await fetch(`/delete/${id}`, { method: "DELETE" });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast("Order deleted successfully");
+            const row = document.getElementById(`row-${id}`);
+            if (row) row.remove();
+            if (!document.querySelector("#ordersTable tbody tr")) {
+              showOrdersEmptyState();
+            }
+            updateOrderStats();
+          } else {
+            showToast(data.message || "Could not delete order", false);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Server error. Please try again.", false);
+        }
+      }
+
+      async function clearAllOrders() {
+        if (!confirm("Delete ALL orders? This cannot be undone.")) return;
+
+        try {
+          const res = await fetch("/clear_orders", { method: "DELETE" });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast("All orders cleared");
+            showOrdersEmptyState();
+            document.getElementById("totalCount").textContent = "0";
+            document.getElementById("pendingCount").textContent = "0";
+            document.getElementById("completedCount").textContent = "0";
+          } else {
+            showToast(data.message || "Could not clear orders", false);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Server error. Please try again.", false);
+        }
+      }
+
+      async function deleteUser(id) {
+        if (!confirm("Delete this user account?")) return;
+
+        try {
+          const res = await fetch(`/delete_user/${id}`, { method: "DELETE" });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast("User deleted successfully");
+            const row = document.getElementById(`user-row-${id}`);
+            if (row) row.remove();
+            const countEl = document.getElementById("userCount");
+            countEl.textContent = Math.max(
+              0,
+              parseInt(countEl.textContent, 10) - 1,
+            );
+          } else {
+            showToast(data.message || "Could not delete user", false);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Server error. Please try again.", false);
+        }
+      }
+
+      // ---- Real-time updates from other sessions (other admins, customers) ----
+
+      socket.on("new_order", (order) => {
+        // Guard against the same order being inserted twice (e.g. a
+        // duplicate emit or a reconnect), by skipping if it's already there.
+        if (document.getElementById(`row-${order.id}`)) return;
+        ensureOrdersTableExists();
+        const tbody = document.querySelector("#ordersTable tbody");
+        tbody.insertAdjacentHTML("afterbegin", buildOrderRowHtml(order));
+        updateOrderStats();
+        showToast("New order received!");
+      });
+
+      socket.on("order_completed", ({ id }) => {
+        const row = document.getElementById(`row-${id}`);
+        if (row) {
+          const badge = row.querySelector(".badge");
+          badge.className = "badge badge-completed";
+          badge.textContent = "Completed";
+          const doneBtn = row.querySelector(".btn-done");
+          if (doneBtn) doneBtn.remove();
+        }
+        updateOrderStats();
+      });
+
+      socket.on("order_deleted", ({ id }) => {
+        const row = document.getElementById(`row-${id}`);
+        if (row) row.remove();
+        if (!document.querySelector("#ordersTable tbody tr")) {
+          showOrdersEmptyState();
+        }
+        updateOrderStats();
+      });
+
+      socket.on("orders_cleared", () => {
+        showOrdersEmptyState();
+        document.getElementById("totalCount").textContent = "0";
+        document.getElementById("pendingCount").textContent = "0";
+        document.getElementById("completedCount").textContent = "0";
+      });
+
+      socket.on("user_deleted", ({ id }) => {
+        const row = document.getElementById(`user-row-${id}`);
+        if (row) row.remove();
+      });
+    </script>
+  </body>
+</html>
