@@ -160,7 +160,7 @@ def init_db():
 
 @app.route('/')
 def home():
-    return render_template("frontpage.html")
+    return render_template("index.html")
 
 
 @app.route('/login', methods=['GET', 'POST'])
