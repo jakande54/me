@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><a href="/">My Orders · The Laundry Shop</a></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+      :root {
+        --blue: #2563eb;
+        --blue-dark: #1d4ed8;
+        --green: #059669;
+        --orange: #d97706;
+        --red: #dc2626;
+        --white: #ffffff;
+        --surface: #f9fafb;
+        --border: #e5e7eb;
+        --text: #111827;
+        --muted: #6b7280;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f3f4f6;
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* Navigation */
+      .nav {
+        background: white;
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .nav-brand {
+        text-decoration: none;
+        color: #111827;
+        font-size: 2rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .nav-user {
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      /* Layout */
+      .page {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      /* Buttons */
+      .btn {
+        border: none;
+        border-radius: 10px;
+        padding: 0.65rem 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+      }
+
+      .btn-primary {
+        background: var(--blue);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--blue-dark);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      .btn-ghost {
+        background: #f3f4f6;
+        color: var(--text);
+      }
+
+      .btn-ghost:hover {
+        background: #e5e7eb;
+      }
+
+      .btn-sm {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.85rem;
+      }
+
+      .btn-pay {
+        background: var(--green);
+        color: white;
+      }
+
+      .btn-pay:hover {
+        background: #047857;
+      }
+
+      /* Stats */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 14px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      /* Cards */
+      .card {
+        background: white;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Table */
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        background: #f9fafb;
+      }
+
+      th {
+        text-align: left;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+      }
+
+      tbody tr:hover {
+        background: #f9fafb;
+      }
+
+      /* Status badges */
+      .badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+      }
+
+      .badge-pending {
+        background: #fef3c7;
+        color: var(--orange);
+      }
+
+      .badge-completed {
+        background: #d1fae5;
+        color: var(--green);
+      }
+
+      .badge-paid {
+        background: #dbeafe;
+        color: var(--blue-dark);
+      }
+
+      .status-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--muted);
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        z-index: 50;
+      }
+
+      .modal-overlay.open {
+        display: flex;
+      }
+
+      .modal {
+        background: white;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 16px;
+        padding: 2rem;
+        animation: pop 0.25s ease;
+      }
+
+      .modal-title {
+        margin-bottom: 1rem;
+      }
+
+      .modal-subtitle {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 1.25rem;
+        margin-top: -0.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        outline: none;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        border-color: var(--blue);
+      }
+
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 1rem;
+      }
+
+      /* Payment option cards */
+      .pay-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .pay-option {
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem 1rem;
+        text-align: left;
+        cursor: pointer;
+        background: white;
+        transition: 0.2s;
+        font-family: inherit;
+      }
+
+      .pay-option:hover:not(:disabled) {
+        border-color: var(--blue);
+        background: #f5f8ff;
+      }
+
+      .pay-option:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .pay-option-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .pay-option-title {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+      }
+
+      .pay-option-desc {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .stk-status {
+        display: none;
+        align-items: center;
+        gap: 0.6rem;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 0.9rem 1rem;
+        font-size: 0.9rem;
+        color: var(--blue-dark);
+        margin-top: 0.5rem;
+      }
+
+      .stk-status.show {
+        display: flex;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #bfdbfe;
+        border-top-color: var(--blue-dark);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        flex-shrink: 0;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Toast */
+      #toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 10px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: 0.3s;
+        pointer-events: none;
+        z-index: 60;
+      }
+
+      #toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .nav {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .page-title {
+          font-size: 1.5rem;
+        }
+
+        .stats-row {
+          grid-template-columns: 1fr;
+        }
+
+        .pay-options {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav">
+      <a class="nav-brand" href="/"><span>🫧</span> The Laundry Shop</a>
+      <div class="nav-right">
+        <span class="nav-user">👤 {{ fullname }}</span>
+        <a href="/logout" class="btn btn-ghost btn-sm">Sign out</a>
+      </div>
+    </nav>
+
+    <div class="page">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+        "
+      >
+        <h1 class="page-title" style="margin-bottom: 0">My Orders</h1>
+        <button
+          class="btn btn-primary"
+          onclick="document.getElementById('orderModal').classList.add('open')"
+        >
+          + New Order
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total orders</div>
+          <div class="stat-value" id="totalCount">{{ orders|length }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" id="pendingCount" style="color: #d97706">
+            {{ orders|selectattr('status', 'equalto', 'Pending')|list|length }}
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="completedCount" style="color: #059669">
+            {{ orders|selectattr('status', 'equalto', 'Completed')|list|length
+            }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders table -->
+      <div class="card" id="ordersCard" style="padding: 0; overflow: hidden">
+        {% if orders %}
+        <div class="table-wrap" style="border: none; border-radius: 0">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Service</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in orders %}
+              <tr id="row-{{ o.id }}">
+                <td style="color: var(--muted); font-size: 0.8rem">
+                  #{{ o.id }}
+                </td>
+                <td>{{ o.customer }}</td>
+                <td>{{ o.phone }}</td>
+                <td>{{ o.service }}</td>
+                <td>
+                  <div class="status-cell">
+                    {% if o.payment_status == 'paid' %}
+                    <span class="badge badge-paid">Paid</span>
+                    {% else %}
+                    <span
+                      class="badge {% if o.status == 'Completed' %}badge-completed{% else %}badge-pending{% endif %}"
+                    >
+                      {{ o.status }}
+                    </span>
+                    {% if o.status == 'Completed' %}
+                    <button
+                      class="btn btn-sm btn-pay"
+                      onclick="openPaymentModal({{ o.id }}, '{{ o.customer }}', '{{ o.phone }}')"
+                    >
+                      Pay
+                    </button>
+                    {% endif %} {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state" id="emptyState">
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem">🧺</div>
+          <div style="font-weight: 600; margin-bottom: 0.25rem">
+            No orders yet
+          </div>
+          <div style="font-size: 0.875rem">
+            Place your first order to get started.
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- New Order Modal -->
+    <div class="modal-overlay" id="orderModal">
+      <div class="modal">
+        <h2 class="modal-title">New Order</h2>
+        <div class="form-group">
+          <label>Your name</label>
+          <input id="oName" type="text" placeholder="Jane Doe" />
+        </div>
+        <div class="form-group">
+          <label>Phone number</label>
+          <input id="oPhone" type="tel" placeholder="+254 700 000 000" />
+        </div>
+        <div class="form-group">
+          <label>Service</label>
+          <select id="oService">
+            <option>Wash & Fold</option>
+            <option>Wash & Iron</option>
+            <option>Dry Cleaning</option>
+            <option>Bedding & Linens</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button
+            class="btn btn-primary"
+            id="placeOrderBtn"
+            onclick="submitOrder()"
+          >
+            Place order
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="paymentModal">
+      <div class="modal">
+        <h2 class="modal-title">
+          Pay for order <span id="payOrderLabel"></span>
+        </h2>
+        <div class="modal-subtitle" id="payOrderSubtitle"></div>
+
+        <div class="form-group">
+          <label>Amount (KES)</label>
+          <input id="payAmount" type="number" min="1" placeholder="e.g. 800" />
+        </div>
+
+        <div class="pay-options">
+          <button class="pay-option" id="payNowOption" onclick="choosePayNow()">
+            <div class="pay-option-icon">📲</div>
+            <div class="pay-option-title">Pay now</div>
+            <div class="pay-option-desc">
+              We'll send an M-Pesa prompt to the customer's phone
+            </div>
+          </button>
+          <button
+            class="pay-option"
+            id="payLaterOption"
+            onclick="choosePayLater()"
+          >
+            <div class="pay-option-icon">🚚</div>
+            <div class="pay-option-title">Pay after delivery</div>
+            <div class="pay-option-desc">
+              Mark this order as cash/pay-on-delivery
+            </div>
+          </button>
+        </div>
+
+        <div class="stk-status" id="stkStatus">
+          <div class="spinner"></div>
+          <span id="stkStatusText"
+            >Waiting for the customer to enter their M-Pesa PIN…</span
+          >
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closePaymentModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+      const socket = io();
+      let currentPaymentOrder = null; // { id, customer, phone }
+
+      function showToast(msg, ok = true) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.style.background = ok ? "#111827" : "#dc2626";
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 3000);
+      }
+
+      function closeModal() {
+        document.getElementById("orderModal").classList.remove("open");
+      }
+
+      // Close modal when clicking the dark overlay itself, not just the Cancel button
+      document.getElementById("orderModal").addEventListener("click", (e) => {
+        if (e.target.id === "orderModal") closeModal();
+      });
+
+      function clearOrderForm() {
+        document.getElementById("oName").value = "";
+        document.getElementById("oPhone").value = "";
+        document.getElementById("oService").selectedIndex = 0;
+      }
+
+      function updateStats() {
+        const rows = document.querySelectorAll("#ordersTable tbody tr");
+        const total = rows.length;
+        let pending = 0;
+        let completed = 0;
+        rows.forEach((row) => {
+          if (row.querySelector(".badge-pending")) pending++;
+          if (
+            row.querySelector(".badge-completed") ||
+            row.querySelector(".badge-paid")
+          )
+            completed++;
+        });
+        document.getElementById("totalCount").textContent = total;
+        document.getElementById("pendingCount").textContent = pending;
+        document.getElementById("completedCount").textContent = completed;
+      }
+
+      function ensureTableExists() {
+        // If this is the customer's first-ever order, the empty state is
+        // showing instead of a table. Build the table shell in that case.
+        if (document.getElementById("ordersTable")) return;
+
+        const card = document.getElementById("ordersCard");
+        card.innerHTML = `
+          <div class="table-wrap" style="border: none; border-radius: 0">
+            <table id="ordersTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Customer</th>
+                  <th>Phone</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      function addOrderRow(order) {
+        ensureTableExists();
+        const tbody = document.querySelector("#ordersTable tbody");
+        tbody.insertAdjacentHTML(
+          "afterbegin",
+          `
+          <tr id="row-${order.id}">
+            <td style="color: var(--muted); font-size: 0.8rem">#${order.id}</td>
+            <td>${order.customer}</td>
+            <td>${order.phone}</td>
+            <td>${order.service}</td>
+            <td>
+              <div class="status-cell">
+                <span class="badge badge-pending">Pending</span>
+              </div>
+            </td>
+          </tr>
+          `,
+        );
+        updateStats();
+      }
+
+      // Registered once, outside submitOrder, so it never duplicates
+      socket.on("new_order", (order) => {
+        // Guard against the same order being inserted twice (e.g. a
+        // duplicate emit or a reconnect), by skipping if it's already there.
+        if (document.getElementById(`row-${order.id}`)) return;
+        addOrderRow(order);
+      });
+
+      // Fired by the server once staff mark an order as done.
+      // We swap the badge to "Completed" AND add a Pay button so the
+      // customer/staff can immediately collect payment.
+      socket.on("order_completed", (order) => {
+        const row = document.getElementById(`row-${order.id}`);
+        if (!row) return;
+
+        const statusCell = row.querySelector(".status-cell");
+        const badge = statusCell.querySelector(".badge");
+        badge.textContent = "Completed";
+        badge.classList.remove("badge-pending");
+        badge.classList.add("badge-completed");
+
+        if (!statusCell.querySelector(".btn-pay")) {
+          const payBtn = document.createElement("button");
+          payBtn.className = "btn btn-sm btn-pay";
+          payBtn.textContent = "Pay";
+          payBtn.onclick = () =>
+            openPaymentModal(order.id, order.customer || "", order.phone || "");
+          statusCell.appendChild(payBtn);
+        }
+
+        updateStats();
+      });
+
+      // Fired by the server after the STK push resolves (customer entered
+      // PIN, cancelled, or it timed out) via the M-Pesa callback.
+      socket.on("payment_status", ({ order_id, status, reason }) => {
+        if (currentPaymentOrder && currentPaymentOrder.id === order_id) {
+          const statusBox = document.getElementById("stkStatus");
+          const statusText = document.getElementById("stkStatusText");
+          if (status === "paid") {
+            statusBox.classList.add("show");
+            statusText.textContent = "Payment received. Thank you!";
+            showToast("Payment received");
+            markRowPaid(order_id);
+            setTimeout(closePaymentModal, 1500);
+          } else {
+            statusBox.classList.remove("show");
+            showToast(reason || "Payment was not completed", false);
+            setPayOptionsDisabled(false);
+          }
+        } else if (status === "paid") {
+          markRowPaid(order_id);
+        }
+      });
+
+      function markRowPaid(orderId) {
+        const row = document.getElementById(`row-${orderId}`);
+        if (!row) return;
+        const statusCell = row.querySelector(".status-cell");
+        const badge = statusCell.querySelector(".badge");
+        badge.textContent = "Paid";
+        badge.classList.remove("badge-completed", "badge-pending");
+        badge.classList.add("badge-paid");
+        const payBtn = statusCell.querySelector(".btn-pay");
+        if (payBtn) payBtn.remove();
+      }
+
+      function openPaymentModal(id, customer, phone) {
+        currentPaymentOrder = { id, customer, phone };
+        document.getElementById("payOrderLabel").textContent = `#${id}`;
+        document.getElementById("payOrderSubtitle").textContent =
+          `${customer} · ${phone}`;
+        document.getElementById("payAmount").value = "";
+        document.getElementById("stkStatus").classList.remove("show");
+        setPayOptionsDisabled(false);
+        document.getElementById("paymentModal").classList.add("open");
+      }
+
+      function closePaymentModal() {
+        document.getElementById("paymentModal").classList.remove("open");
+        currentPaymentOrder = null;
+      }
+
+      document.getElementById("paymentModal").addEventListener("click", (e) => {
+        if (e.target.id === "paymentModal") closePaymentModal();
+      });
+
+      function setPayOptionsDisabled(disabled) {
+        document.getElementById("payNowOption").disabled = disabled;
+        document.getElementById("payLaterOption").disabled = disabled;
+      }
+
+      async function choosePayNow() {
+        const amount = document.getElementById("payAmount").value.trim();
+        if (!amount || Number(amount) <= 0) {
+          showToast("Enter an amount first", false);
+          return;
+        }
+        if (!currentPaymentOrder) return;
+
+        setPayOptionsDisabled(true);
+        const statusBox = document.getElementById("stkStatus");
+        const statusText = document.getElementById("stkStatusText");
+        statusBox.classList.add("show");
+        statusText.textContent = "Sending the payment prompt…";
+
+        try {
+          const res = await fetch("/stk_push", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_id: currentPaymentOrder.id,
+              phone: currentPaymentOrder.phone,
+              amount: Number(amount),
+            }),
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            statusText.textContent =
+              "Prompt sent. Ask the customer to check their phone and enter their M-Pesa PIN.";
+            // Final result arrives asynchronously via the "payment_status"
+            // socket event once M-Pesa calls our /mpesa/callback endpoint.
+          } else {
+            statusBox.classList.remove("show");
+            showToast(
+              data.message || "Could not send the payment prompt",
+              false,
+            );
+            setPayOptionsDisabled(false);
+          }
+        } catch (error) {
+          console.error(error);
+          statusBox.classList.remove("show");
+          showToast("Server error. Please try again.", false);
+          setPayOptionsDisabled(false);
+        }
+      }
+
+      async function choosePayLater() {
+        if (!currentPaymentOrder) return;
+        setPayOptionsDisabled(true);
+
+        try {
+          const res = await fetch("/payment_method", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_id: currentPaymentOrder.id,
+              method: "pay_after_delivery",
+            }),
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast("Marked as pay after delivery");
+            closePaymentModal();
+          } else {
+            showToast(data.message || "Could not update order", false);
+            setPayOptionsDisabled(false);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Server error. Please try again.", false);
+          setPayOptionsDisabled(false);
+        }
+      }
+
+      async function submitOrder() {
+        const customer = document.getElementById("oName").value.trim();
+        const phone = document.getElementById("oPhone").value.trim();
+        const service = document.getElementById("oService").value;
+
+        if (!customer || !phone) {
+          showToast("Please fill in all fields", false);
+          return;
+        }
+
+        const placeBtn = document.getElementById("placeOrderBtn");
+        placeBtn.disabled = true;
+        placeBtn.textContent = "Placing...";
+
+        try {
+          const res = await fetch("/add_order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ customer, phone, service }),
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast("Order placed successfully");
+            clearOrderForm();
+            closeModal();
+            // The row itself is added via the "new_order" socket event,
+            // not here, so there's exactly one insertion, not two.
+          } else {
+            showToast(data.message || "Could not place order", false);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Server error. Please try again.", false);
+        } finally {
+          placeBtn.disabled = false;
+          placeBtn.textContent = "Place order";
+        }
+      }
+    </script>
+  </body>
+</html>

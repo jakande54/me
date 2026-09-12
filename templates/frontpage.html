@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Laundry Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --blue: #1a56db;
+        --blue-dk: #1341b0;
+        --blue-lt: #e8f0fe;
+        --teal: #0e9f8a;
+        --ink: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --surface: #f9fafb;
+        --white: #ffffff;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--ink);
+        background: var(--white);
+      }
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: var(--white);
+        z-index: 50;
+        transition: box-shadow 0.3s ease;
+      }
+      .brand {
+        text-decoration: none;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .brand:hover {
+        color: #2563eb;
+        transform: scale(1.03);
+      }
+
+      .brand:visited {
+        color: #1e3a8a;
+      }
+      .nav-links {
+        display: flex;
+        gap: 0.75rem;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1.1rem;
+        border-radius: 7px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+      }
+      .btn-outline {
+        border: 1px solid var(--border);
+        color: var(--ink);
+        background: transparent;
+      }
+      .btn-outline:hover {
+        background: var(--surface);
+      }
+      .btn-primary {
+        background: var(--blue);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--blue-dk);
+      }
+
+      /* Fade-in on load: start hidden via CSS so there's no flash of
+         fully-visible content before JS attaches */
+      .fade-section {
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity 0.8s ease,
+          transform 0.8s ease;
+      }
+      .fade-section.in-view {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Hero */
+      .hero {
+        text-align: center;
+        padding: 5rem 1rem 4rem;
+        background: linear-gradient(
+          160deg,
+          var(--blue-lt) 0%,
+          #f0fdf4 60%,
+          var(--white) 100%
+        );
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 0.3rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--blue);
+        margin-bottom: 1.5rem;
+      }
+      .hero h1 {
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        font-weight: 800;
+        line-height: 1.15;
+        max-width: 700px;
+        margin: 0 auto 0.75rem;
+      }
+      .hero h1 span {
+        color: var(--blue);
+      }
+      .hero p {
+        font-size: 1.05rem;
+        color: var(--muted);
+        max-width: 500px;
+        margin: 0 auto 2rem;
+      }
+      .hero-cta {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      /* Services */
+      .services {
+        padding: 4rem 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .section-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--blue);
+        margin-bottom: 0.5rem;
+      }
+      .section-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .section-sub {
+        color: var(--muted);
+        margin-bottom: 2.5rem;
+        font-size: 0.95rem;
+      }
+      .service-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+      }
+      .service-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition:
+          box-shadow 0.2s,
+          transform 0.2s;
+      }
+      .service-card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-4px);
+      }
+      .service-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+      }
+      .service-name {
+        font-weight: 700;
+        margin-bottom: 0.35rem;
+      }
+      .service-desc {
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+
+      /* Contact */
+      .contact {
+        padding: 3rem 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .contact-info {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 8px 15px;
+        border-radius: 30px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: 0.3s;
+      }
+
+      .contact-item:hover {
+        transform: translateY(-2px);
+        border-color: #2563eb;
+      }
+
+      .contact-item .icon {
+        font-size: 1rem;
+      }
+
+      .contact-item span:last-child {
+        color: #374151;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      /* How it works */
+      .how {
+        padding: 4rem 2rem;
+        background: var(--surface);
+      }
+      .how-inner {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+      .step {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .step-num {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--blue);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+      .step-title {
+        font-weight: 600;
+      }
+      .step-desc {
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+
+      /* CTA footer */
+      .cta-bar {
+        background: var(--blue);
+        color: #fff;
+        text-align: center;
+        padding: 3.5rem 1rem;
+      }
+      .cta-bar h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .cta-bar p {
+        opacity: 0.8;
+        margin-bottom: 1.5rem;
+      }
+      .btn-white {
+        background: #fff;
+        color: var(--blue);
+        font-weight: 600;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+      }
+      .btn-white:hover {
+        opacity: 0.9;
+      }
+
+      footer {
+        text-align: center;
+        padding: 1.5rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a class="brand" href="/">🫧 The Laundry Shop</a>
+      <div class="nav-links">
+        <a href="/login" class="btn btn-outline">Log in</a>
+        <a href="/register" class="btn btn-primary">Get started</a>
+      </div>
+    </nav>
+
+    <section class="hero fade-section">
+      <div class="hero-badge">✨ Laundry made effortless</div>
+      <h1>Clean clothes,<br /><span>zero hassle.</span></h1>
+      <p>
+        Drop off, we handle the rest. Same-day turnaround on wash, dry, iron,
+        and more.
+      </p>
+      <div class="hero-cta">
+        <a
+          href="/register"
+          class="btn btn-primary"
+          style="font-size: 1rem; padding: 0.7rem 1.5rem"
+          >Place an order</a
+        >
+        <a
+          href="/login"
+          class="btn btn-outline"
+          style="font-size: 1rem; padding: 0.7rem 1.5rem"
+          >Sign in</a
+        >
+      </div>
+    </section>
+
+    <section class="services fade-section">
+      <div class="section-label">What we offer</div>
+      <h2 class="section-title">Every laundry service you need</h2>
+      <p class="section-sub">
+        From everyday washing to delicate dry cleaning — we've got it covered.
+      </p>
+      <div class="service-grid">
+        <div class="service-card">
+          <div class="service-icon">🧺</div>
+          <div class="service-name">Wash & Fold</div>
+          <div class="service-desc">
+            Your everyday clothes washed, dried, and neatly folded.
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">👔</div>
+          <div class="service-name">Wash & Iron</div>
+          <div class="service-desc">
+            Crisp, wrinkle-free clothes ready to wear immediately.
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🧥</div>
+          <div class="service-name">Dry Cleaning</div>
+          <div class="service-desc">
+            Professional care for suits, dresses, and delicate fabrics.
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🛏️</div>
+          <div class="service-name">Bedding & Linens</div>
+          <div class="service-desc">
+            Duvets, sheets, and pillowcases laundered to perfection.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how fade-section">
+      <div class="how-inner">
+        <div class="section-label">Simple process</div>
+        <h2 class="section-title">How it works</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-title">Place your order</div>
+            <div class="step-desc">
+              Log in and submit your laundry details in under a minute.
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-title">Drop off or we collect</div>
+            <div class="step-desc">
+              Bring your items in, or schedule a pickup at your door.
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-title">We do the work</div>
+            <div class="step-desc">
+              Your order is processed and marked complete when ready.
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-title">Pick up & enjoy</div>
+            <div class="step-desc">
+              Collect fresh, clean laundry — or we'll deliver it back.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-bar fade-section">
+      <h2>Ready for fresher laundry?</h2>
+      <p>Join hundreds of customers who trust The Laundry Shop.</p>
+      <a
+        href="/register"
+        class="btn btn-white"
+        style="font-size: 1rem; padding: 0.7rem 1.5rem"
+        >Create a free account</a
+      >
+    </section>
+
+    <section class="contact">
+      <div class="contact-info">
+        <div class="contact-item">
+          <span class="icon">📍</span>
+          <span>Nairobi, Kenya</span>
+        </div>
+
+        <div class="contact-item">
+          <span class="icon">📞</span>
+          <span>+254 712 345 678</span>
+        </div>
+
+        <div class="contact-item">
+          <span class="icon">✉️</span>
+          <span>info@laundryshop.com</span>
+        </div>
+      </div>
+    </section>
+
+    <footer>© 2026 The Laundry Shop · Built with care</footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Reveal sections with a staggered fade-in
+        const sections = document.querySelectorAll(".fade-section");
+        sections.forEach((section, index) => {
+          setTimeout(() => {
+            section.classList.add("in-view");
+          }, index * 150);
+        });
+      });
+
+      // Sticky nav gets a shadow once the page is scrolled
+      window.addEventListener("scroll", () => {
+        const nav = document.querySelector("nav");
+        nav.style.boxShadow =
+          window.scrollY > 50 ? "0 2px 15px rgba(0,0,0,0.1)" : "none";
+      });
+
+      // Gentle periodic pulse on the final CTA button to draw the eye
+      const ctaButton = document.querySelector(".btn-white");
+      if (ctaButton) {
+        setInterval(() => {
+          ctaButton.style.transform = "scale(1.05)";
+          setTimeout(() => {
+            ctaButton.style.transform = "scale(1)";
+          }, 500);
+        }, 4000);
+      }
+    </script>
+  </body>
+</html>

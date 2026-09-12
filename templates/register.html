@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><a href="/">Create Account · The Laundry Shop</a></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f172a, #1e40af);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .nav-brand {
+        text-decoration: none;
+        color: #3259ad;
+        font-size: 2rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .auth-page {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .auth-box {
+        width: 100%;
+        max-width: 480px;
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.5s ease;
+      }
+
+      .auth-title {
+        text-align: center;
+        font-size: 2rem;
+        color: #111827;
+        margin-bottom: 10px;
+      }
+
+      .auth-sub {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+
+      .form-group {
+        margin-bottom: 18px;
+      }
+
+      .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #374151;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        outline: none;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+      }
+
+      .btn {
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: #2563eb;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .error-msg {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+        animation: fadeIn 0.3s ease;
+        display: none;
+      }
+
+      .error-msg.visible {
+        display: block;
+      }
+
+      .success-msg {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+        animation: fadeIn 0.3s ease;
+        display: none;
+      }
+
+      .success-msg.visible {
+        display: block;
+      }
+
+      .auth-footer {
+        margin-top: 20px;
+        text-align: center;
+        color: #6b7280;
+      }
+
+      .auth-footer a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .auth-footer a:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(25px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .auth-box {
+          padding: 25px;
+        }
+
+        .auth-title {
+          font-size: 1.7rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-page">
+      <div class="auth-box">
+        <a class="nav-brand" href="/"><span>🫧</span> The Laundry Shop</a>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-sub">
+          Start managing your laundry with The Laundry Shop
+        </p>
+
+        <div id="errorMsg" class="error-msg"></div>
+        <div id="successMsg" class="success-msg"></div>
+
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="fullname">Full name</label>
+            <input
+              id="fullname"
+              name="fullname"
+              type="text"
+              placeholder="Jane Doe"
+              required
+              autofocus
+            />
+          </div>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="john_doe"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Create a strong password"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="role">Account type</label>
+            <select id="role" name="role">
+              <option value="CUSTOMER">Customer</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="width: 100%; justify-content: center; padding: 0.65rem"
+          >
+            Create account
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          Already have an account? <a href="/login">Sign in</a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("registerForm");
+      const submitBtn = form.querySelector(".btn-primary");
+      const errorMsg = document.getElementById("errorMsg");
+      const successMsg = document.getElementById("successMsg");
+
+      function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.classList.add("visible");
+        successMsg.classList.remove("visible");
+      }
+
+      function showSuccess(message) {
+        successMsg.textContent = message;
+        successMsg.classList.add("visible");
+        errorMsg.classList.remove("visible");
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        errorMsg.classList.remove("visible");
+        successMsg.classList.remove("visible");
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "Creating Account...";
+
+        const fullname = document.getElementById("fullname").value.trim();
+        const username = document.getElementById("username").value.trim();
+        // Password is intentionally NOT trimmed — a leading/trailing space
+        // is a valid character the user may have chosen on purpose.
+        const password = document.getElementById("password").value;
+        const role = document.getElementById("role").value;
+
+        try {
+          const response = await fetch("/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              fullname,
+              username,
+              password,
+              role,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showSuccess(data.message || "Account created successfully");
+            setTimeout(() => {
+              window.location.href = "/login";
+            }, 800);
+          } else {
+            showError(
+              data.message || "Something went wrong. Please try again.",
+            );
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "Create Account";
+          }
+        } catch (error) {
+          console.error(error);
+          showError("Server error. Please try again.");
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "Create Account";
+        }
+      });
+    </script>
+  </body>
+</html>
